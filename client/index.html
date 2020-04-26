@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- 輸入區 -->
+    <span>請輸入名稱</span>
+    <input type="text" id="name">
+    <button id="setname">登入</button>
+    <hr>
+    <span>請輸入訊息</span>
+    <input type="text" id="text">
+    <button id="btn" type="button">發送</button>
+    <hr>
+    <div id="container">
+
+    </div>
+
+    <script>
+        // 創建WebSocket連結
+        let ws = null; //new WebSocket('ws://localhost:3000');
+
+        //當按下登入時
+        document.getElementById('setname').onclick = function() {
+            //名字不能為空
+            let name = document.getElementById('name').value;
+            if (name === '') return console.log('名字為空');
+            //開啟WebSocket連結
+            ws = new WebSocket('ws://localhost:3000');
+            //連接成功時
+            ws.onopen = function() { //通知後台客戶登入
+                ws.send(JSON.stringify({
+                    name: name,
+                    type: 'setname'
+                }));
+            }
+
+            //處理按下發送後事件，按"發送"或按下ENTER皆可
+            document.getElementById('btn').onclick = sendMessage;
+            document.getElementById('text').onkeyup = function(e) {
+                if (e.keyCode !== 13) { //若不是空白鍵
+                    return;
+                } else {
+                    sendMessage(); //發送訊息
+                }
+            }
+
+            //收到server端發送的訊息時
+            ws.onmessage = function(e) {
+                    //console.log(e.data);
+                    let con = document.getElementById('container'); //取得container
+                    let div = createChatPanel(JSON.parse(e.data)); //取得要新建的div
+
+                    //將div插在container元素的最前端
+                    con.insertBefore(div, con.children[0]);
+
+                }
+                //將登入按鍵關閉
+            document.getElementById('setname').setAttribute('disabled', true);
+        }
+
+        //處理server端發送的訊息，輸出至div
+        function createChatPanel(data) {
+            let name = data.name;
+            let text = data.text;
+
+            let div = document.createElement('div');
+            let span1 = document.createElement('span1');
+            let span2 = document.createElement('span2');
+
+            //設置span1字體格式
+            span1.style.color = '#00f';
+            span1.style.fontWeight = '900';
+
+            if (name === 'Server') {
+                //捉取現在時間
+                span1.innerHTML = " " + (new Date()).toString();
+                //填入訊息
+                span2.innerHTML = text;
+            } else {
+                //捉取現在時間
+                span1.innerHTML = (new Date()).toString();
+                //填入訊息
+                span2.innerHTML = name + "說: " + text;
+            }
+            //添加至div
+            div.appendChild(span1);
+            div.appendChild(document.createElement('br'));
+            div.appendChild(span2);
+
+            return div;
+        }
+
+        function sendMessage() { //發送訊息
+            let text = document.getElementById('text');
+            if (text.value === '') return; //判斷是否為空訊息
+            ws.send(JSON.stringify({ //將輸入區輸入的文本內容發送出去
+                text: text.value,
+                type: "chat"
+            }));
+            text.value = ''; //送出後將text欄位清空
+        }
+    </script>
+</body>
+
+</html>
