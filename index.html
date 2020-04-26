@@ -8,6 +8,7 @@
 </head>
 
 <body>
+    <h1>Node.js + WebSocket 聊天室</h1>
     <!-- 輸入區 -->
     <span>請輸入名稱</span>
     <input type="text" id="name">
@@ -77,12 +78,12 @@
             span1.style.color = '#00f';
             span1.style.fontWeight = '900';
 
-            if (name === 'Server') {
+            if (name === 'Server') { //處理SERVER發出的訊息
                 //捉取現在時間
                 span1.innerHTML = " " + (new Date()).toString();
                 //填入訊息
                 span2.innerHTML = text;
-            } else {
+            } else { //處理客戶端發出的訊息
                 //捉取現在時間
                 span1.innerHTML = (new Date()).toString();
                 //填入訊息
